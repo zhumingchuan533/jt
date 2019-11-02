@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jt.mapper.OrderMapper">
+	<!-- 思想:
+	        多表关联转化为单表关联
+	        mybatis sql封装方式resultMap 
+	        <select 标签> 一对一 一对多-->
+	        
+	<select id="findOrderById" resultMap="orderRM">
+	select * from tb_order where order_id=#{id}
+	</select>
+
+	<!-- 进行关联对象封装
+	type:指封装之后的对象类型   id:resultMap的引用     <id/>封装主键 一般不能省略   autoMapping="true":能自动映射其他参数 一般要开启驼峰规则-->
+	<resultMap type="Order" id="orderRM" autoMapping="true">
+	
+	<!-- 主键映射 -->
+	<id column="order_id" property="orderId" />
+	
+	<!-- 封装除主键以外的其他参数 -->
+	<!-- <result/> 因为autoMapping="true"可省略-->
+	
+	<!--  一对一   封装订单物流信息      javaType:指定封装对象类型   column:将参数传给关联查询用-->
+	<association property="orderShipping" javaType="OrderShipping" select="findOrderShipping" column="order_id"></association>
+	
+	<!-- 一对多      property:对象属性 oftype:集合中属性的类型-->
+	<collection property="orderItems" ofType="OrderItem" select="findOrderItems" column="order_id"></collection>
+	
+	</resultMap>
+	
+	<select id="findOrderShipping" resultType="OrderShipping">
+	select * from tb_order_shipping where order_id=#{order_id}
+	</select>
+	
+	<select id="findOrderItems" resultType="OrderItem">
+	select * from tb_order_item where order_id=#{order_id}
+	</select>
+</mapper>
